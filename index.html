@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ascend · Grandmaster Academy</title>
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/" } }</script>
+</head>
+<body>
+<div id="bg"></div>
+<div id="stage"></div>
+
+<header id="hud" class="glass"></header>
+
+<nav id="nav" class="glass">
+  <button data-act="mode" data-mode="play" title="Play"><i>♞</i><span>Play</span></button>
+  <button data-act="mode" data-mode="academy" title="Academy"><i>✦</i><span>Academy</span></button>
+  <button data-act="mode" data-mode="puzzles" title="Puzzles"><i>◆</i><span>Puzzles</span></button>
+  <button data-act="mode" data-mode="progress" title="Progress"><i>◔</i><span>Progress</span></button>
+  <button data-act="mode" data-mode="customize" title="Customize"><i>❖</i><span>Style</span></button>
+</nav>
+
+<div id="evalbar" class="glass" hidden><div id="evalfill"></div><b id="evalnum">0.0</b></div>
+<div id="views" class="glass">
+  <button data-act="view" data-v="default" title="Player view">◢</button>
+  <button data-act="view" data-v="top" title="Top-down view">▣</button>
+  <button data-act="view" data-v="low" title="Low cinematic view">▭</button>
+  <button data-act="view" data-v="side" title="Side view">◧</button>
+</div>
+
+<aside id="panel" class="glass"></aside>
+<div id="overlay" hidden></div>
+<div id="toasts"></div>
+<div id="fail" hidden>The game couldn't start. It needs a modern browser with WebGL enabled (Chrome, Edge, Safari or Firefox). Running it locally? Serve it over HTTP with <code>./start.sh</code> instead of opening the file directly.</div>
+
+<script type="module" src="js/main.js"></script>
+<script>setTimeout(function(){ if(!window.__booted) document.getElementById('fail').hidden=false; }, 2500);</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html><meta charset="utf-8"><title>tests</title><pre id="out">running</pre>
+<script type="module">
+import { Chess, START, uci } from './js/engine.js';
+import { Searcher, MATE } from './js/ai.js';
+import { LESSONS } from './js/lessons.js';
+import { PUZZLES } from './js/puzzles.js';
+import { OPENINGS } from './js/data.js';
+const log = []; let fails = 0;
+const ok = (c, msg) => { if (!c) { fails++; log.push('FAIL ' + msg); } };
+try {
+  const t0 = performance.now();
+  ok(new Chess().perft(4) === 197281, 'perft start d4 ' + new Chess().perft(4));
+  const kiwi = 'r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1';
+  ok(new Chess(kiwi).perft(3) === 97862, 'perft kiwipete d3 ' + new Chess(kiwi).perft(3));
+  const p3 = '8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1';
+  ok(new Chess(p3).perft(4) === 43238, 'perft pos3 d4 ' + new Chess(p3).perft(4));
+  const p5 = 'rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8';
+  ok(new Chess(p5).perft(3) === 62379, 'perft pos5 d3 ' + new Chess(p5).perft(3));
+  log.push('perft ms ' + (performance.now() - t0 | 0));
+  const c0 = new Chess(kiwi); ok(c0.fen() === kiwi, 'fen roundtrip ' + c0.fen());
+  for (const [n, l] of OPENINGS) { try { new Chess().playSan(l); } catch (e) { ok(false, 'opening ' + n + ': ' + e.message); } }
+  const S = new Searcher();
+  for (const L of LESSONS) L.steps.forEach((s, i) => {
+    const tag = `lesson ${L.id}#${i + 1}`;
+    try {
+      const c = s.san ? new Chess().playSan(s.san) : new Chess(s.fen);
+      ok(c.king[0] >= 0 && c.king[1] >= 0, tag + ' kings');
+      ok(!c.attacked(c.king[c.turn ^ 1], c.turn), tag + ' side not to move in check');
+      if (s.task) {
+        for (const a of s.task.accept || []) {
+          const m = c.moveFromSan(a); ok(m, tag + ' illegal accept ' + a);
+          if (m) ok(c.san(m) === a, tag + ` san mismatch ${a} vs ${c.san(m)}`);
+        }
+        if (s.task.mate) ok(c.moves().some(m => c.san(m).endsWith('#')), tag + ' no mate available');
+      }
+    } catch (e) { ok(false, tag + ' ' + e.message); }
+  });
+  for (const p of PUZZLES) {
+    const tag = 'puzzle ' + p.id;
+    try {
+      const c = p.san ? new Chess().playSan(p.san) : new Chess(p.fen);
+      ok(!c.attacked(c.king[c.turn ^ 1], c.turn), tag + ' illegal position');
+      const first = [].concat(p.sol[0]);
+      if (!p.noVerify) {
+        const r = S.search(c, { depth: p.mate ? 5 : 6, time: 6000 });
+        const b = c.san(r.best);
+        ok(first.includes(b), `${tag} engine prefers ${b} (${r.score}) d${r.depth}`);
+        if (p.mate) ok(r.score > MATE - 100, tag + ' not a forced mate ' + r.score);
+        else log.push(`${tag} best ${b} score ${r.score}`);
+      }
+      p.sol.forEach((s, i) => {
+        const a = [].concat(s);
+        for (const x of a) { const m = c.moveFromSan(x); ok(m, `${tag} illegal ${x}`); if (m) ok(c.san(m) === x, `${tag} san ${x} vs ${c.san(m)}`); }
+        c.make(c.moveFromSan(a[0]));
+      });
+      if (p.mate) ok(c.status() === 'checkmate', tag + ' final not mate');
+    } catch (e) { ok(false, tag + ' ' + e.message); }
+  }
+  // search speed
+  const c = new Chess('r1bq1rk1/pp2bppp/2n1pn2/3p4/2PP4/2N1PN2/PP2BPPP/R1BQ1RK1 w - - 0 9');
+  const t1 = performance.now(); const r = S.search(c, { depth: 6, time: 3000 });
+  log.push(`midgame search d${r.depth} ${r.nodes} nodes ${(performance.now() - t1) | 0}ms best ${c.san(r.best)} ${r.score}`);
+} catch (e) { fails++; log.push('EXC ' + e.stack); }
+document.getElementById('out').textContent = (fails ? fails + ' FAILURES\n' : 'ALL OK\n') + log.join('\n');
+document.title = 'done';
+</script>

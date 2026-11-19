@@ -1,0 +1,24 @@
+[package]
+name = "miles-chess-game"
+version = "1.0.0"
+description = "MilesChessGame: the Ascend chess academy as a macOS app"
+authors = ["builtbymiles"]
+edition = "2024"
+rust-version = "1.90"
+
+[lib]
+name = "miles_chess_game_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[features]
+# Test builds only: lets `MCG_SELFTEST` run a check inside the window and
+# print the result. Never part of the app you install. See src/selftest.rs.
+selftest = []
+
+[build-dependencies]
+tauri-build = { version = "2.7.5", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "2.12.6", features = [] }
