@@ -149,6 +149,8 @@ I built this project with **AI-assisted coding in VS Code**. I set the direction
 
 ---
 
-## Credits
+## License
+
+[MIT](LICENSE) © 2026 builtbymiles
 
 3D rendering by [three.js](https://threejs.org) (MIT license), included in `vendor/`.
